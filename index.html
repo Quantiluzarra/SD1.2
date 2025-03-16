@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск ссылок</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e90ff, #ff69b4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-y: auto;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 700px;
+            backdrop-filter: blur(5px);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #1e90ff;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(to right, #1e90ff, #00bfff);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+        button:hover {
+            background: linear-gradient(to right, #00bfff, #1e90ff);
+            transform: scale(1.05);
+        }
+        #results {
+            margin-top: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .result {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            background-color: #fafafa;
+            transition: box-shadow 0.2s;
+        }
+        .result:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .result a {
+            color: #1e90ff;
+            text-decoration: none;
+            word-wrap: break-word;
+        }
+        .result a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Поиск ссылок</h1>
+        <input type="text" id="query" placeholder="Введите ваш запрос...'">
+        <button onclick="search()">Искать</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function search() {
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+                alert('Пожалуйста, введите запрос!');
+                return;
+            }
+
+            const url = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const links = doc.querySelectorAll('a.result__a');
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (links.length > 0) {
+                        links.forEach((link, index) => {
+                            const result = document.createElement('div');
+                            result.className = 'result';
+                            result.innerHTML = `${index + 1}. <a href="${link.href}" target="_blank">${link.textContent}</a>`;
+                            resultsDiv.appendChild(result);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<p>Ссылки не найдены. Попробуйте другой запрос.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('results').innerHTML = '<p>Произошла ошибка при поиске.</p>';
+                });
+        }
+    </script>
+</body>
+</html>
